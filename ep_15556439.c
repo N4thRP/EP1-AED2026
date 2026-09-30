@@ -80,56 +80,53 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col, celula_t** cel_ant_linh
 		cel_lin = NULL;
 		cel_col = NULL;
 	}
-
     //os antecessores são: a celula anterior da linha, a celula anterior da coluna, a fileira anterior da linha e a fileira anterior da coluna
-    if((cel_lin == NULL || cel_lin == p->primeira_linha->primeiro || fil_linha == NULL) 
-        || (cel_col == NULL || cel_col == p->primeira_coluna->primeiro || fil_coluna == NULL))
-    {
-        *cel_ant_linha = NULL;
-        *cel_ant_coluna = NULL; //OTIMIZAR ISSO DAQUI!!!!!
-    }
-
-    if((fil_linha == p->primeira_linha || fil_linha == NULL) || (fil_coluna == p->primeira_coluna || fil_coluna == NULL)) {
-        *fil_ant_linha = NULL;
-        *fil_ant_coluna = NULL; //TA MUITO REPETIDOOOOOOOO!!!
-    }
-
-    while((cel_lin != NULL && cel_col != NULL) && (fil_linha->indice < lin || fil_coluna->indice < col)){ //&& ou ||
+    *cel_ant_linha = NULL;
+    *cel_ant_coluna = NULL; 
+    *fil_ant_linha = NULL;
+    *fil_ant_coluna = NULL;
+    
+    //primeiro while para achar a linha
+    while(fil_linha != NULL && fil_linha->indice < lin){ //&& ou ||
         //cel_lin->coluna = fil_coluna->indice; //parte SUPER IMPORTANTE, SE NÃO AS LINHAS E COLUNAS NÃO ESTARÃO DEMARCADAS NA PRÓPRIA CELULA!!!
-
-        if(fil_linha->indice < lin){
-            //vamos atualizar os valores
-            *fil_ant_linha = fil_linha; //lembrando que antes era NULL
-
-            //agora para continuar o while
-            fil_linha = fil_linha->proximo;
+        printf("entrou no while");
+        
+        *fil_ant_linha = fil_linha; //lembrando que antes era NULL
+        //agora para continuar o while
+        fil_linha = fil_linha->proximo;
+        if(fil_linha != NULL){
             cel_lin = fil_linha->primeiro;
-        } else if(cel_lin->coluna != col){ //parte IMPORTANTÍSSIMA
+        }
+    }
+    //achou? agora vai pra coluna certa
+    if(fil_linha != NULL && fil_linha->indice == lin){
+        while(cel_lin != NULL && cel_lin->coluna < col){
             *cel_ant_linha = cel_lin; //lembrando que antes era NULL
             cel_lin = cel_lin->proxima_linha;
         }
-        //cel_lin->linha = fil_linha->indice; //demarcar ela com a linha e coluna corretas
-
-
-        if(fil_coluna->indice < col){
-            *fil_ant_coluna = fil_coluna;
-
-            //agora para continuar o while
-            fil_coluna = fil_coluna->proximo;
+    }
+    //em tese, já temos a posição, mas precisamos atualizar a coluna
+    while(fil_coluna != NULL && fil_coluna->indice < col){
+        *fil_ant_coluna = fil_coluna;
+        
+        //agora para continuar o while
+        fil_coluna = fil_coluna->proximo;
+        if(fil_coluna != NULL){
             cel_col = fil_coluna->primeiro;
-        } else if(cel_col->linha != lin){ //parte IMPORTANTÍSSIMA
+        }
+    }
+    //por fim, atualizamos os anteriores para celula coluna, que dá na mesma posição
+    if(fil_coluna != NULL && fil_coluna->indice == col){
+        while(cel_col != NULL && cel_col->linha < lin) {
             *cel_ant_coluna = cel_col;
             cel_col = cel_col->proxima_coluna;
         }
-        
     }
-    if(fil_linha != NULL && (fil_linha->indice == lin && fil_coluna->indice == col)){
-        //cel_lin->linha = fil_linha->indice; //demarcar ela com a linha e coluna corretas
-        //cel_lin->coluna = fil_coluna->indice; //parte SUPER IMPORTANTE, SE NÃO AS LINHAS E COLUNAS NÃO ESTARÃO DEMARCADAS NA PRÓPRIA CELULA!!!
+    
+    if(cel_lin != NULL && (cel_lin->linha == lin && cel_lin->coluna == col)){
         return cel_lin; 
         //poderia ser cel_lin ou cel_col...dá na mesma!
     }
-
     return NULL;
 }
 
