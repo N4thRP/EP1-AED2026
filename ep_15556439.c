@@ -290,7 +290,7 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
         }
     } else {
         if(valor == 0){
-
+            //faz nada
         } else if(valor != 0){
             celula_t *novo = malloc(sizeof(celula_t));
             novo->coluna = col;
@@ -299,18 +299,22 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
 
             if(cel_ant_linha != NULL){
                 novo->proxima_linha = cel_ant_linha->proxima_linha;
-                cel_ant_linha->proxima_linha = novo;
+                cel_ant_linha->proxima_linha = novo; //até aqui tydo certo
 
                 if(cel_ant_coluna != NULL){
                     novo->proxima_coluna = cel_ant_coluna->proxima_coluna;
-                    cel_ant_coluna->proxima_coluna = novo;
-                } else if(cel_ant_coluna == NULL && fil_ant_coluna->proximo->primeiro != NULL){
-                    novo->proxima_coluna = fil_ant_coluna->proximo->primeiro;
-                    //novo->proxima_coluna = fil_coluna_primeiro
-                    fil_ant_coluna->proximo->primeiro = novo;
-                    //fil_coluna_primeiro = novo;
-                } else{ //SE NAO HÁ NA COLUNA
+                    cel_ant_coluna->proxima_coluna = novo; //certo
+                } else if(cel_ant_coluna == NULL && fil_ant_coluna->proximo != NULL){ //se cel_ant_linha != NULL não está na primerira coluna
+                    //logo tem uma coluna anterior
+                    if(fil_ant_coluna->proximo->primeiro != NULL){
+                        novo->proxima_coluna = fil_ant_coluna->proximo->primeiro;
+                        //novo->proxima_coluna = fil_coluna_primeiro
+                        fil_ant_coluna->proximo->primeiro = novo;
+                        //fil_coluna_primeiro = novo;
+                    }
+                } else if(fil_ant_coluna->proximo == NULL){ //SE NAO HÁ NA COLUNA
                     fileira_t *col_nova = (fileira_t*) malloc(sizeof(fileira_t));
+                    col_nova->indice = col;
 
                     fil_ant_coluna->proximo = col_nova; //(COMO FAZ ISOSOSOSOSOOOOOO??????)
                     col_nova->primeiro = novo;
@@ -319,52 +323,78 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
                     col_nova->proximo = NULL;
                 }
             } else{
-                if(fil_ant_linha->proximo->primeiro != NULL){
-                    novo->proxima_linha = fil_ant_linha->proximo->primeiro;
-                    fil_ant_linha->proximo->primeiro = novo;
-                    //novo->proximo_linha = fil_linha->primeiro;
-                    //fil_linha->primeiro = novo;
-                    if(cel_ant_coluna != NULL){
-                        novo->proxima_coluna = cel_ant_coluna->proxima_coluna;
-                        cel_ant_coluna->proxima_coluna = novo;
-                    } else if(cel_ant_coluna == NULL && fil_ant_coluna->proximo->primeiro != NULL){
-                        novo->proxima_coluna = fil_ant_coluna->proximo->primeiro;
-                        fil_ant_coluna->proximo->primeiro = novo;
-                        //fil_coluna->primeiro = novo;
-                    } else {
-                        fileira_t *col_nova = (fileira_t*) malloc(sizeof(fileira_t));
+                if(fil_ant_linha != NULL){
+                    if(fil_ant_linha->proximo != NULL){ // se ela existe, tem primeiro, se não existe, não tem primeiro
+                        novo->proxima_linha = fil_ant_linha->proximo->primeiro;
+                        fil_ant_linha->proximo->primeiro = novo;
+                        //novo->proximo_linha = fil_linha->primeiro;
+                        //fil_linha->primeiro = novo;
+                        if(cel_ant_coluna != NULL){
+                            novo->proxima_coluna = cel_ant_coluna->proxima_coluna;
+                            cel_ant_coluna->proxima_coluna = novo;
+                        } else if(cel_ant_coluna == NULL && fil_ant_coluna->proximo != NULL){ //se cel_ant_linha != NULL não está na primerira coluna
+                            //logo tem uma coluna anterior
+                            if(fil_ant_coluna->proximo->primeiro != NULL){
+                                novo->proxima_coluna = fil_ant_coluna->proximo->primeiro;
+                                //novo->proxima_coluna = fil_coluna_primeiro
+                                fil_ant_coluna->proximo->primeiro = novo;
+                                //fil_coluna_primeiro = novo;
+                            }
+                        } else if(fil_ant_coluna->proximo == NULL){
+                            fileira_t *col_nova = (fileira_t*) malloc(sizeof(fileira_t));
+                            col_nova->indice = col;
 
-                        fil_ant_coluna->proximo = col_nova; //(COMO FAZ ISOSOSOSOSOOOOOO??????)
-                        col_nova->primeiro = novo;
-                        novo->proxima_coluna = NULL;
-                        //faltou inicializar o proximo da coluna
-                        col_nova->proximo = NULL;
+                            fil_ant_coluna->proximo = col_nova; //(COMO FAZ ISOSOSOSOSOOOOOO??????)
+                            col_nova->primeiro = novo;
+                            novo->proxima_coluna = NULL;
+                            //faltou inicializar o proximo da coluna
+                            col_nova->proximo = NULL;
+                        }
+                    } else {
+                        fileira_t *lin_nova = (fileira_t*) malloc(sizeof(fileira_t));
+                        lin_nova->indice = lin;
+                        fil_ant_linha->proximo = lin_nova; //(COMO FAZ ISOSOSOSOSOOOOOO??????)
+                        lin_nova->primeiro = novo;
+                        novo->proxima_linha = NULL;
+                        //faltou inicializar o proximo da linha
+                        lin_nova->proximo = NULL;
+
+                        if(cel_ant_coluna != NULL){
+                            novo->proxima_coluna = cel_ant_coluna->proxima_coluna;
+                            cel_ant_coluna->proxima_coluna = novo;
+                        } else if(cel_ant_coluna == NULL && fil_ant_coluna->proximo->primeiro != NULL){
+                            novo->proxima_coluna = fil_ant_coluna->proximo->primeiro;
+                            fil_ant_coluna->proximo->primeiro = novo;
+                            //fil_coluna->primeiro = novo; //CONFERIR!!!!!!!!!!!!
+                            //novo->proximo_coluna = cel_atual->proximo_coluna;
+                        } else {
+                            fileira_t *col_nova = (fileira_t*) malloc(sizeof(fileira_t));
+                            col_nova->indice = col;
+                            
+                            fil_ant_coluna->proximo = col_nova; //(COMO FAZ ISOSOSOSOSOOOOOO??????)
+                            col_nova->primeiro = novo;
+                            novo->proxima_coluna = NULL;
+                            //faltou inicializar o proximo da coluna
+                            col_nova->proximo = NULL;
+                        }
                     }
-                } else {
+                } else if(p->primeira_linha == NULL){
                     fileira_t *lin_nova = (fileira_t*) malloc(sizeof(fileira_t));
-                    fil_ant_linha->proximo = lin_nova; //(COMO FAZ ISOSOSOSOSOOOOOO??????)
-                    lin_nova->primeiro = novo;
-                    novo->proxima_linha = NULL;
-                    //faltou inicializar o proximo da linha
-                    lin_nova->proximo = NULL;
+                    fileira_t *col_nova = (fileira_t*) malloc(sizeof(fileira_t));
 
-                    if(cel_ant_coluna != NULL){
-                        novo->proxima_coluna = cel_ant_coluna->proxima_coluna;
-                        cel_ant_coluna->proxima_coluna = novo;
-                    } else if(cel_ant_coluna == NULL && fil_ant_coluna->proximo->primeiro != NULL){
-                        novo->proxima_coluna = fil_ant_coluna->proximo->primeiro;
-                        fil_ant_coluna->proximo->primeiro = novo;
-                        //fil_coluna->primeiro = novo; //CONFERIR!!!!!!!!!!!!
-                        //novo->proximo_coluna = cel_atual->proximo_coluna;
-                    } else {
-                        fileira_t *col_nova = (fileira_t*) malloc(sizeof(fileira_t));
-                        
-                        fil_ant_coluna->proximo = col_nova; //(COMO FAZ ISOSOSOSOSOOOOOO??????)
-                        col_nova->primeiro = novo;
-                        novo->proxima_coluna = NULL;
-                        //faltou inicializar o proximo da coluna
-                        col_nova->proximo = NULL;
-                    }
+                    lin_nova->indice = lin;
+                    col_nova->indice = col;
+                    p->primeira_linha = lin_nova;
+                    p->primeira_coluna = col_nova;
+
+                    lin_nova->proximo = NULL;
+                    col_nova->proximo = NULL;
+
+                    lin_nova->primeiro = novo;
+                    col_nova->primeiro = novo;
+                    
+                    novo->proxima_linha = NULL;
+                    novo->proxima_coluna = NULL;
                 }
             }
         }
