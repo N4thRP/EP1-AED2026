@@ -176,8 +176,8 @@ int contar_nao_nulas(planilha_t* p) { //não eh a maneira mais otimizada...
     fileira_t *lin = p->primeira_linha;
     fileira_t *col = p->primeira_coluna;
    
-    for(fileira_t *i = lin; i != NULL; i = lin->proximo){
-        for(fileira_t *j = col; j != NULL; j = col->proximo){
+    for(fileira_t *i = lin; i != NULL; i = i->proximo){
+        for(fileira_t *j = col; j != NULL; j = j->proximo){
             valor = obter_valor(p, i->indice, j->indice); //de fato.
             if(valor != 0){
                 count++;
