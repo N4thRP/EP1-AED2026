@@ -697,7 +697,9 @@ void liberar_tudo(planilha_t* p) {
         if(cel == NULL){
             fileira_t *apagar_lin = lin;
             lin = lin->proximo;
-            cel = lin->primeiro;
+            if(lin != NULL){
+                cel = lin->primeiro;
+            }
             free(apagar_lin);
         }
     }
