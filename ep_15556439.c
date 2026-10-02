@@ -90,7 +90,6 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col, celula_t** cel_ant_linh
     //primeiro while para achar a linha
     while(fil_linha != NULL && fil_linha->indice < lin){ //&& ou ||
         //cel_lin->coluna = fil_coluna->indice; //parte SUPER IMPORTANTE, SE NÃO AS LINHAS E COLUNAS NÃO ESTARÃO DEMARCADAS NA PRÓPRIA CELULA!!!
-        printf("entrou no while");
         
         *fil_ant_linha = fil_linha; //lembrando que antes era NULL
         //agora para continuar o while
