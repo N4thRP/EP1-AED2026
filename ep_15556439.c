@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <limits.h>
 
 typedef struct celula{
     int linha;
@@ -216,11 +217,17 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
     if(cel_atual != NULL){
         if(valor != cel_atual->valor){ //para ser uma operação efeitiva
             hist_novo->op.valor_anterior = cel_atual->valor; //guardou o valor anterior
+            hist_novo->op.linha = lin;
+            hist_novo->op.coluna = col;
+            hist_novo->op.transposicao = false;
             hist_novo->proximo = p->historico.topo;
             p->historico.topo = hist_novo;
         }
     } else {
         hist_novo->op.valor_anterior = 0; //não existia
+        hist_novo->op.linha = lin;
+        hist_novo->op.coluna = col;
+        hist_novo->op.transposicao = false;
         hist_novo->proximo = p->historico.topo;
         p->historico.topo = hist_novo;
     }
@@ -282,6 +289,12 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
                     }
                 }
             }
+            
+            //fazer o pop no historico
+            //elo_pilha_t *apagar = hist_novo;
+            //hist_novo = hist_novo->proximo;
+            //free(apagar);
+            
             //libera no final
             free(cel_atual); 
         }
@@ -476,6 +489,7 @@ bool remover_celula(planilha_t* p, int lin, int col) {
         elo_pilha_t *hist = (elo_pilha_t *) malloc(sizeof(elo_pilha_t));
         hist->op.linha = lin;
         hist->op.coluna = col;
+        hist->op.transposicao = false;
         hist->proximo = p->historico.topo;
         p->historico.topo = hist;
         return true;
@@ -486,50 +500,73 @@ bool remover_celula(planilha_t* p, int lin, int col) {
 bool transpor(planilha_t* p, int lin, int col, int tamanho) {
     /* TODO: transpoe uma matriz quadrada que está localizada entre
     as linhas [lin, lin + tamanho) e colunas [col, col + tamanho). */
-    if(lin+tamanho >= 10000000000 || col+tamanho >= 10000000000){
+    if(lin+tamanho >= INT_MAX || col+tamanho >= INT_MAX){
         //função faz nada e retorna falso
         return false;
     }
-
     celula_t * cel_ant_linha;
     celula_t* cel_ant_coluna;
     fileira_t* fil_ant_linha;
     fileira_t* fil_ant_coluna;
 
     planilha_t *p_nova = p;
-
-    //a celula que ele vai pegar vai ser a respectiva da lin e col indicada
-    celula_t *atual = buscar_celula(p_nova, lin, col, &cel_ant_linha, &cel_ant_coluna, &fil_ant_linha, &fil_ant_coluna);
-    celula_t *aux_linha = (celula_t *) malloc(sizeof(celula_t));
-    celula_t *aux_coluna = (celula_t *) malloc(sizeof(celula_t));
     int cont = 0;
+    //a celula que ele vai pegar vai ser a respectiva da lin e col indicada
+    (void) buscar_celula(p_nova, lin, col, &cel_ant_linha, &cel_ant_coluna, &fil_ant_linha, &fil_ant_coluna);
+    if(p->primeira_linha == NULL){
+        return false;
+    }
+   
+    int i, j;
+    fileira_t *linha;
+    fileira_t *coluna;
+    if(fil_ant_linha != NULL){
+        linha = fil_ant_linha->proximo;
+    } else{
+        linha = p->primeira_linha;
+    }
+    
+    i = linha->indice;
 
-    fileira_t *j = fil_ant_coluna->proximo;
-    fileira_t *i = fil_ant_linha->proximo;
-    while((i->indice <= lin+tamanho && i != NULL) || (j->indice <= col+tamanho && j != NULL)){ //que não seja uma fileira que não exista
-        aux_coluna = atual->proxima_coluna;
-        aux_linha = atual->proxima_linha;
-        //verificação
-        if(aux_coluna == NULL || aux_coluna->coluna > col+tamanho || aux_linha == NULL || aux_linha->linha > lin+tamanho) break;
+    //int i = lin;
+    while(i <= (lin+tamanho)-1){
+        if(fil_ant_coluna != NULL){
+            coluna = (fil_ant_coluna->proximo);
+        } else {
+            coluna = (p->primeira_coluna);
+        }
+        
+        j = coluna->indice + cont;
+        linha = linha->proximo;
+        
+        if(linha == NULL) break;
+        int prox_lin = linha->indice;
+        //int j = col + cont;
+        
+        while(j <= (col+tamanho)-1){
+            coluna = coluna->proximo;
+            if(coluna == NULL) break;
+            int prox_col = coluna->indice;
+            
+            if(prox_col > (col+tamanho)-1) break;
+            int v_lin = obter_valor(p_nova, i, prox_col);
+            int v_col = obter_valor(p_nova, prox_lin, j);
+            //definir na linha
+            definir_celula(p_nova, i, prox_col, v_col);
+            definir_celula(p_nova, prox_col, i, v_lin);
+            j = prox_col;
+        }
+    
+        elo_pilha_t *apagar_lin = p->historico.topo;
+        p->historico.topo = p->historico.topo->proximo;
+        free(apagar_lin); //apaguei as edições novas agora!
+        elo_pilha_t *apagar_col = p->historico.topo;
+        p->historico.topo = p->historico.topo->proximo;
+        free(apagar_col); //apaguei as edições novas agora!
 
-        atual->proxima_coluna = atual->proxima_linha;
-        atual->proxima_linha = aux_coluna;
         cont++;
-        aux_coluna = aux_coluna->proxima_coluna;
-        aux_linha = aux_linha->proxima_linha;
-        //verificação
-        if(aux_coluna == NULL || aux_coluna->coluna > col+tamanho || aux_linha == NULL || aux_linha->linha > lin+tamanho) break;
-
-        atual = atual->proxima_coluna;
-        atual->proxima_coluna = aux_linha;
-        aux_linha = aux_coluna;
-
-        atual = atual->proxima_linha;
-
-        //da a continuação para o while
-        j = fil_ant_coluna->proximo->proximo;
-        i = fil_ant_linha->proximo->proximo;
-    } 
+        i = prox_lin;
+    }
 
     if(cont >= 1){ //vamos adicionar na pilha
         elo_pilha_t *hist_novo = (elo_pilha_t*) malloc(sizeof(elo_pilha_t));
@@ -545,6 +582,7 @@ bool transpor(planilha_t* p, int lin, int col, int tamanho) {
         return true;
     }
 
+    //atual =  NULL;
     return false; //deixo ou não...
 }
 
@@ -582,7 +620,7 @@ bool desfazer(planilha_t* p) {
 
     //não tenho que apagar as novas adições tbm????
     elo_pilha_t *apagar_novo = p->historico.topo;
-    p->historico.topo = end;
+    p->historico.topo = end->proximo;
     free(apagar_novo); //apaguei as edições novas agora!
     elo_pilha_t *apagar = end;
     end = end->proximo; //passa o topo para o outro
@@ -600,11 +638,11 @@ void exibir_planilha(planilha_t *p) {
     
     //se não...
     int cel_valor;
-    for(fileira_t *i = p->primeira_linha; i != NULL; i = p->primeira_linha->proximo){
-        for(fileira_t *j = p->primeira_coluna; i != NULL; i = p->primeira_coluna->proximo){
+    for(fileira_t *i = p->primeira_linha; i != NULL; i = i->proximo){
+        for(fileira_t *j = p->primeira_coluna; j != NULL; j = j->proximo){
             cel_valor = obter_valor(p, i->indice, j->indice);
             if(cel_valor != 0){
-                printf("linha: %d, coluna: %d, valor: %d\n", i->indice, j->indice, cel_valor);
+                printf("%d %d %d\n", i->indice, j->indice, cel_valor);
             }
         }
     }
@@ -619,7 +657,7 @@ void exibir_historico(planilha_t* p) {
     //se não...
     elo_pilha_t *end = p->historico.topo; //eh ponteiro
     while(end != NULL){
-        printf("linha: %d, coluna: %d, valor_anterior: %d\n", end->op.linha, end->op.coluna, end->op.valor_anterior);
+        printf("%d %d %d\n", end->op.linha, end->op.coluna, end->op.valor_anterior);
         end = end->proximo;
     }
     printf("\n");
@@ -631,7 +669,7 @@ void liberar_tudo(planilha_t* p) {
     //primeiro vamos liberar o historico;
     elo_pilha_t *end = p->historico.topo;
     while(end != NULL){
-        elo_pilha_t *apagar = p->historico.topo;
+        elo_pilha_t *apagar = end;
         end = end->proximo;
         free(apagar);
     }
