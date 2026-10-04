@@ -55,10 +55,6 @@ int igual(char* a, char* b) {
 
 void inicializar_planilha(planilha_t *p) {
     // TODO: inicialize primeiraLinha, primeiraColuna, total_celulas e historico.topo
-    p->primeira_linha = (fileira_t *) malloc(sizeof(fileira_t)); //????? CONFERIR!!!
-    p->primeira_coluna = (fileira_t *) malloc(sizeof(fileira_t));
-    p->historico.topo = (elo_pilha_t *) malloc(sizeof(elo_pilha_t));
-
     p->primeira_linha = NULL; //eh um ponteiro
     p->primeira_coluna = NULL; //eh um ponteiro
     p->total_celulas = 0; //int
@@ -275,12 +271,14 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
             p->historico.topo = hist_novo;
         }
     } else {
-        hist_novo->op.valor_anterior = 0; //não existia
-        hist_novo->op.linha = lin;
-        hist_novo->op.coluna = col;
-        hist_novo->op.transposicao = false;
-        hist_novo->proximo = p->historico.topo;
-        p->historico.topo = hist_novo;
+        if(valor != 0){
+            hist_novo->op.valor_anterior = 0; //não existia
+            hist_novo->op.linha = lin;
+            hist_novo->op.coluna = col;
+            hist_novo->op.transposicao = false;
+            hist_novo->proximo = p->historico.topo;
+            p->historico.topo = hist_novo;
+        }
     }
     
     fileira_t *apagar_lin = NULL;
@@ -609,6 +607,10 @@ bool transpor(planilha_t* p, int lin, int col, int tamanho) {
     
     i = linha->indice;
 
+    elo_pilha_t *topo_ant = p->historico.topo;
+    int col_vez;
+    int prox_lin;
+    int prox_col;
     //int i = lin;
     while(i <= (lin+tamanho)-1){
         if(fil_ant_coluna != NULL){
@@ -617,36 +619,41 @@ bool transpor(planilha_t* p, int lin, int col, int tamanho) {
             coluna = (p->primeira_coluna);
         }
         
-        j = coluna->indice + cont;
+        if(cont == 0){
+            j = coluna->indice;
+        } else {
+            j = coluna->proximo->indice;
+        }
         linha = linha->proximo;
-        
+        col_vez = j;
+
         if(linha == NULL) break;
-        int prox_lin = linha->indice;
         //int j = col + cont;
         
-        while(j <= (col+tamanho)-1){
+        while(col_vez <= (col+tamanho)-1){
             coluna = coluna->proximo;
             if(coluna == NULL) break;
-            int prox_col = coluna->indice;
+            prox_lin = linha->indice;
+            prox_col = coluna->indice;
             
             if(prox_col > (col+tamanho)-1) break;
+            if(prox_lin > (lin+tamanho)-1) break;
             int v_lin = obter_valor(p_nova, i, prox_col);
             int v_col = obter_valor(p_nova, prox_lin, j);
             //definir na linha
             definir_celula(p_nova, i, prox_col, v_col);
-            definir_celula(p_nova, prox_col, i, v_lin);
-            j = prox_col;
+            definir_celula(p_nova, prox_lin, j, v_lin);
+            col_vez = prox_col;
         }
     
-        elo_pilha_t *apagar_lin = p->historico.topo;
-        p->historico.topo = p->historico.topo->proximo;
-        free(apagar_lin); //apaguei as edições novas agora!
-        elo_pilha_t *apagar_col = p->historico.topo;
-        p->historico.topo = p->historico.topo->proximo;
-        free(apagar_col); //apaguei as edições novas agora!
-
         cont++;
         i = prox_lin;
+    }
+    
+    while(p->historico.topo != topo_ant){
+        elo_pilha_t *apagar_novo = p->historico.topo;
+        p->historico.topo = p->historico.topo->proximo;
+        free(apagar_novo);
     }
 
     if(cont >= 1){ //vamos adicionar na pilha
@@ -744,7 +751,11 @@ void exibir_historico(planilha_t* p) {
     //se não...
     elo_pilha_t *end = p->historico.topo; //eh ponteiro
     while(end != NULL){
-        printf("%d %d %d\n", end->op.linha, end->op.coluna, end->op.valor_anterior);
+        if(end->op.transposicao == false){
+            printf("%d %d %d\n", end->op.linha, end->op.coluna, end->op.valor_anterior);
+        } else {
+            printf("T %d %d %d\n", end->op.linha, end->op.coluna, end->op.tamanho);
+        }
         end = end->proximo;
     }
     //printf("\n");
