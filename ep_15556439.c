@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <limits.h>
+#include <limits.h> //necessário para o INT_MAX
 
 typedef struct celula{
     int linha;
@@ -127,7 +127,7 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col, celula_t** cel_ant_linh
     return NULL;
 }
 
-int obter_valor(planilha_t *p, int linha, int coluna) { //atualizar
+int obter_valor(planilha_t *p, int linha, int coluna) {
     // TODO: use buscarCelula; retorne 0 se a celula nao existir
     celula_t * cel_ant_linha;
     celula_t* cel_ant_coluna;
@@ -142,7 +142,7 @@ int obter_valor(planilha_t *p, int linha, int coluna) { //atualizar
     return 0;
 }
 
-int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini, int coluna_fim) { //conferir função! não eh a mais otimizada...
+int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini, int coluna_fim) {
     // TODO: some os valores das celulas nao nulas no intervalo dado
 
     int soma = 0;
@@ -166,7 +166,7 @@ int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini,
 }
 
 //concertar no final!!!!!!!!!
-int contar_nao_nulas(planilha_t* p) { //não eh a maneira mais otimizada... 
+int contar_nao_nulas(planilha_t* p) {  
     // TODO: retorne a quantidade de celulas nao nulas
     int count = 0;
     int valor;
