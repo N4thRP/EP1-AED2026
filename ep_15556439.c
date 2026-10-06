@@ -610,7 +610,11 @@ bool desfazer(planilha_t* p) {
     /* TODO: desempilhe de p->historico e restaure o valor anterior.
     Retorna false se o historico estiver vazio, true caso contrario. */
 
-    if(p->historico.topo == NULL) return false;
+    if(p->historico.topo == NULL) {
+        printf("HISTORICO VAZIO\n");
+        return false;
+    }
+    
 
     int lin, col;
     int valor_ant;
@@ -647,7 +651,11 @@ void exibir_planilha(planilha_t *p) {
     /* TODO: imprima "linha coluna valor" por linha, em ordem crescente
        de linha e, dentro de cada linha, de coluna. Se vazia, imprima
        "PLANILHA VAZIA" */
-    if(p->primeira_linha == NULL || p->primeira_coluna == NULL) printf("PLANILHA VAZIA\n");
+    if(p->primeira_linha == NULL || p->primeira_coluna == NULL){
+        printf("PLANILHA VAZIA\n");
+    } else {
+        printf("PLANILHA\n");
+    }
     
     //se não...
     int cel_valor;
@@ -665,8 +673,12 @@ void exibir_planilha(planilha_t *p) {
 void exibir_historico(planilha_t* p) {
     /* TODO: imprima "linha coluna valor_anterior" por linha, do topo
     para a base. Se vazio, imprima "HISTORICO VAZIO" */
-    if(p->historico.topo == NULL) printf("HISTORICO VAZIO\n");
-
+    if(p->historico.topo == NULL){
+        printf("HISTORICO VAZIO\n");
+    } else {
+        printf("HISTORICO\n");
+    }
+    
     //se não...
     elo_pilha_t *end = p->historico.topo; //eh ponteiro
     while(end != NULL){
@@ -778,22 +790,23 @@ int main(int argc, char *argv[]) {
             fprintf(saida, "CONT %d\n", contar_nao_nulas(&p));
         } else if (igual(cmd, "DESFAZER")) {
             if (!desfazer(&p)) {
-                fprintf(saida, "HISTORICO VAZIO\n");
+                //fprintf(saida, "HISTORICO VAZIO\n");
             }
         } else if (igual(cmd, "EXIBIR")) {
             if (contar_nao_nulas(&p)) {
-                printf("PLANILHA\n");
+                //printf("PLANILHA\n");
                 exibir_planilha(&p);
             } else {
-                printf("PLANILHA VAZIA\n");
+                exibir_planilha(&p);
+                //printf("PLANILHA VAZIA\n");
             }
         } else if (igual(cmd, "HIST")) {
             if (p.historico.topo) {
-                printf("HISTORICO\n");
+                //printf("HISTORICO\n");
                 exibir_historico(&p);
             }
             else {
-                printf("HISTORICO VAZIO\n");
+                //printf("HISTORICO VAZIO\n");
             }
         } else if (igual(cmd, "TRANS")) {
             int lin, col, tam;
